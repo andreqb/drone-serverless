@@ -1,0 +1,35 @@
+variables:
+  ServiceConnectionName: 'Azure Study'
+  Location: 'EastUS'
+  ResourceGroup: 'studyrg'
+  AppName: 'studyapp' # less or equal than 11 chars
+  DeployAzureResources: true
+  DeployableSourceBranch: 'refs/heads/staging'
+  SlotName: 'default'
+
+name: $(Date:yyyyMMdd)$(Rev:.rr)
+
+trigger:
+  branches:
+    include:
+    - staging
+
+    - feature/* # ci-only
+
+resources:
+- repo: self
+
+jobs:
+
+# CI
+- job: dronestatusjobci
+  displayName: "Drone Status CI"
+  steps:
+  - template: ./src/DroneStatus/azure-pipelines-ci.yml
+
+# CD
+- job: dronestatuscd
+  dependsOn: dronestatusjobci
+  displayName: "Drone Status CD"
+  steps:
+  - template: ./src/DroneStatus/azure-pipelines-cd.yml
